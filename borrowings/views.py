@@ -3,7 +3,8 @@ from .models import Borrowing
 from .serializers import (
     BorrowingSerializer,
     BorrowingListSerializer,
-    BorrowingDetailSerializer
+    BorrowingDetailSerializer,
+    BorrowingCreateSerializer
 )
 
 
@@ -17,5 +18,8 @@ class BorrowingViewSet(viewsets.ModelViewSet):
 
         if self.action == "retrieve":
             return BorrowingDetailSerializer
+
+        if self.action == "create":
+            return BorrowingCreateSerializer
 
         return BorrowingSerializer
