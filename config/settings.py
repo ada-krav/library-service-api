@@ -9,6 +9,7 @@ https://docs.djangoproject.com/en/4.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
+import os
 from datetime import timedelta
 from pathlib import Path
 from dotenv import load_dotenv
@@ -48,6 +49,7 @@ INSTALLED_APPS = [
     "books",
     "borrowings",
     "payments",
+    "notification",
     "drf_spectacular",
 ]
 
@@ -166,3 +168,7 @@ SIMPLE_JWT = {
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
     "ROTATE_REFRESH_TOKENS": True,
 }
+
+# Telegram settings
+TELEGRAM_TOKEN_API = os.getenv("TELEGRAM_TOKEN_API")
+TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
