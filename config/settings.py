@@ -139,3 +139,16 @@ REST_FRAMEWORK = {
     ],
     "DEFAULT_THROTTLE_RATES": {"anon": "101/minute", "user": "301/minute"},
 }
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Library service API',
+    'DESCRIPTION': 'books borrowing service',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    "SWAGGER_UI_SETTINGS": {
+        "deepLinking": True,
+        "defaultModelRendering": "model",
+        "defaultModelsExpandDepth": 2,
+        "defaultModelExpandDepth": 2,
+    },
+}
