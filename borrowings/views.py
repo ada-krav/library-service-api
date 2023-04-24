@@ -1,6 +1,5 @@
-from django_filters import filters
-from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, generics
+
 from .models import Borrowing
 from .serializers import (
     BorrowingSerializer,
