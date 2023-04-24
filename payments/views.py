@@ -21,6 +21,6 @@ class PaymentDetail(generics.RetrieveAPIView):
     permission_classes = (permissions.IsAuthenticated, IsAdminOrSelf)
 
     def get_object(self):
-        obj = get_object_or_404(Payment, pk=self.kwargs['pk'])
+        obj = get_object_or_404(Payment, pk=self.kwargs["pk"])
         self.check_object_permissions(self.request, obj)
         return obj
