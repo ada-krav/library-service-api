@@ -85,7 +85,6 @@ class BorrowingCreateSerializer(serializers.ModelSerializer):
         book.inventory -= 1
         book.save()
 
-        user = self.context["request"].user
-        borrowing = Borrowing.objects.create(user=user, **validated_data)
+        borrowing = Borrowing.objects.create(**validated_data)
 
         return borrowing
