@@ -68,6 +68,16 @@ class BorrowingCreateSerializer(serializers.ModelSerializer):
         if book.inventory <= 0:
             raise serializers.ValidationError("The book is not available.")
 
+        borrow_date = data["borrow_date"]
+        expected_return_date = data["expected_return_date"]
+        actual_return_date = data.get("actual_return_date")
+
+        if expected_return_date < borrow_date:
+            raise serializers.ValidationError("The expected return date cannot be earlier than the borrow date.")
+
+        if actual_return_date < borrow_date:
+            raise serializers.ValidationError("The actual return date cannot be earlier than the borrow date.")
+
         return data
 
     def create(self, validated_data):
