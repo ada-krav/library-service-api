@@ -3,6 +3,8 @@ import datetime
 from rest_framework import serializers
 
 from books.serializers import BookSerializer
+from payments.serializers import PaymentSerializer
+from payments.utils import create_payment_and_stripe_session
 from users.serializers import UserSerializer
 from borrowings.models import Borrowing
 
@@ -55,6 +57,7 @@ class BorrowingDetailSerializer(BorrowingSerializer):
 
 
 class BorrowingCreateSerializer(serializers.ModelSerializer):
+    payments = PaymentSerializer(many=True, read_only=True)
     class Meta:
         model = Borrowing
         fields = (
@@ -62,6 +65,7 @@ class BorrowingCreateSerializer(serializers.ModelSerializer):
             "book",
             "borrow_date",
             "expected_return_date",
+            "payments"
         )
 
     def validate(self, data):
@@ -83,5 +87,11 @@ class BorrowingCreateSerializer(serializers.ModelSerializer):
         book.save()
 
         borrowing = Borrowing.objects.create(**validated_data)
+        create_payment_and_stripe_session(
+            borrowing,
+            success_url='https://www.google.com/',
+            cancel_url='https://www.bing.com/',
+            payment_type="PAYMENT"
+        )
 
         return borrowing

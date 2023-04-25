@@ -3,6 +3,7 @@ import os
 import stripe
 from _decimal import Decimal
 from django.db import models
+from rest_framework.exceptions import ValidationError
 
 from borrowings.models import Borrowing
 
@@ -18,8 +19,8 @@ class Payment(models.Model):
 
     status = models.CharField(max_length=7, choices=StatusType.choices)
     type = models.CharField(max_length=7, choices=TypeType.choices)
-    borrowing = models.OneToOneField(
-        to=Borrowing, on_delete=models.CASCADE, related_name="payment"
+    borrowing = models.ForeignKey(
+        to=Borrowing, on_delete=models.CASCADE, related_name="payments"
     )
     stripe_session_url = models.URLField(null=True, blank=True)
     stripe_session_id = models.CharField(max_length=255, null=True, blank=True)
@@ -60,6 +61,27 @@ class Payment(models.Model):
         self.save()
 
         return session
+
+    def validate_unique(self, exclude=None):
+        super().validate_unique(exclude)
+
+        existing_payments = Payment.objects.filter(
+            borrowing=self.borrowing, type=self.type
+        )
+
+        if self.pk:
+            existing_payments = existing_payments.exclude(pk=self.pk)
+
+        if existing_payments.exists():
+            raise ValidationError(
+                {
+                    "type": f"A payment with type '{self.type}' already exists for this borrowing."
+                }
+            )
+
+    def save(self, *args, **kwargs):
+        self.validate_unique()
+        super().save(*args, **kwargs)
 
     def __str__(self) -> str:
         return self.status
