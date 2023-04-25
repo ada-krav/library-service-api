@@ -57,8 +57,6 @@ class BorrowingList(generics.ListCreateAPIView):
         if is_active_filter is True:
             return Borrowing.objects.filter(actual_return_date=None)
 
-        if not self.request.user.is_authenticated:
-            return Borrowing.objects.none()
         elif self.request.user.is_superuser:
             user_id = self.request.query_params.get('user_id')
             if user_id:
