@@ -29,7 +29,7 @@ class PaymentDetail(generics.RetrieveAPIView):
         return obj
 
 
-@api_view(['POST'])
+@api_view(["POST"])
 def create_stripe_session(request, pk):
     try:
         payment = Payment.objects.get(pk=pk)
@@ -44,7 +44,9 @@ def create_stripe_session(request, pk):
 
     session = payment.create_stripe_session(success_url, cancel_url)
 
-    return Response({
-        'session_id': session['id'],
-        'session_url': session['url'],
-    })
+    return Response(
+        {
+            "session_id": session["id"],
+            "session_url": session["url"],
+        }
+    )

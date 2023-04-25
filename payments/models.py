@@ -36,27 +36,27 @@ class Payment(models.Model):
     def create_stripe_session(self, success_url, cancel_url):
         line_items = [
             {
-                'price_data': {
-                    'currency': 'usd',
-                    'product_data': {
-                        'name': f"{self.type} for {self.borrowing.book.title}",
+                "price_data": {
+                    "currency": "usd",
+                    "product_data": {
+                        "name": f"{self.type} for {self.borrowing.book.title}",
                     },
-                    'unit_amount': int(self.money_to_pay * 100),
+                    "unit_amount": int(self.money_to_pay * 100),
                 },
-                'quantity': 1,
+                "quantity": 1,
             }
         ]
         stripe.api_key = os.getenv("STRIPE_API_KEY")
         session = stripe.checkout.Session.create(
-            payment_method_types=['card'],
+            payment_method_types=["card"],
             line_items=line_items,
-            mode='payment',
+            mode="payment",
             success_url=success_url,
             cancel_url=cancel_url,
         )
 
-        self.stripe_session_id = session['id']
-        self.stripe_session_url = session['url']
+        self.stripe_session_id = session["id"]
+        self.stripe_session_url = session["url"]
         self.save()
 
         return session
