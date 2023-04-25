@@ -47,3 +47,6 @@ uritemplate==4.1.1
 urllib3==1.26.15
 vine==5.0.0
 wcwidth==0.2.6
+python-dotenv==1.0.0
+pyTelegramBotAPI==4.11.0
+stripe==5.4.0
