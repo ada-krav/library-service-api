@@ -1,6 +1,8 @@
+from rest_framework import generics
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 
+from notification.bot import send_to_char_borrowing_book
 from .models import Borrowing
 from .serializers import (
     BorrowingSerializer,
@@ -8,8 +10,6 @@ from .serializers import (
     BorrowingDetailSerializer,
     BorrowingCreateSerializer
 )
-
-from notification.bot import send_to_char_borrowing_book
 
 
 class BorrowingViewSet(viewsets.ModelViewSet):
@@ -46,3 +46,23 @@ class BorrowingViewSet(viewsets.ModelViewSet):
             status=status.HTTP_201_CREATED,
             headers=headers
         )
+
+
+class BorrowingList(generics.ListCreateAPIView):
+    queryset = Borrowing.objects.all()
+    serializer_class = BorrowingSerializer
+
+    def get_queryset(self):
+        is_active_filter = self.request.query_params.get('is_active')
+        if is_active_filter is True:
+            return Borrowing.objects.filter(actual_return_date=None)
+
+        elif self.request.user.is_superuser:
+            user_id = self.request.query_params.get('user_id')
+            if user_id:
+                return Borrowing.objects.filter(user=user_id)
+            else:
+                return Borrowing.objects.all()
+        else:
+            return Borrowing.objects.filter(user=self.request.user)
+
