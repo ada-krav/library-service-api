@@ -1,24 +1,45 @@
 import datetime
 from django.shortcuts import get_object_or_404
 
-from rest_framework import generics
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from rest_framework import permissions
 from notification.tasks import send_to_char_borrowing_book
 from .models import Borrowing
 from .serializers import (
     BorrowingSerializer,
     BorrowingListSerializer,
     BorrowingDetailSerializer,
-    BorrowingCreateSerializer, BorrowingReturnSerializer
+    BorrowingCreateSerializer,
+    BorrowingReturnSerializer,
 )
 
 
 class BorrowingViewSet(viewsets.ModelViewSet):
     queryset = Borrowing.objects.all()
     serializer_class = BorrowingSerializer
+    permission_classes = [
+        permissions.IsAuthenticated,
+    ]
+
+    def get_queryset(self):
+
+        if self.action == "list":
+            is_active_filter = self.request.query_params.get("is_active")
+            if is_active_filter is True:
+                return Borrowing.objects.filter(actual_return_date=None)
+            elif self.request.user.is_superuser:
+                user_id = self.request.query_params.get("user_id")
+                if user_id:
+                    return Borrowing.objects.filter(user=user_id)
+                else:
+                    return Borrowing.objects.all()
+            else:
+                return Borrowing.objects.filter(user=self.request.user)
+        else:
+            return super().get_queryset()
 
     def get_serializer_class(self):
         if self.action == "list":
@@ -38,11 +59,11 @@ class BorrowingViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        send_to_char_borrowing_book.delay(
-            request.data["book"],
-            request.user.id,
-            request.data["expected_return_date"]
-        )
+        # send_to_char_borrowing_book.delay(
+        #     request.data["book"],
+        #     request.user.id,
+        #     request.data["expected_return_date"]
+        # )
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
         return Response(
@@ -52,27 +73,11 @@ class BorrowingViewSet(viewsets.ModelViewSet):
         )
 
 
-class BorrowingList(generics.ListCreateAPIView):
-    queryset = Borrowing.objects.all()
-    serializer_class = BorrowingSerializer
-
-    def get_queryset(self):
-        is_active_filter = self.request.query_params.get("is_active")
-        if is_active_filter is True:
-            return Borrowing.objects.filter(actual_return_date=None)
-
-        elif self.request.user.is_superuser:
-            user_id = self.request.query_params.get("user_id")
-            if user_id:
-                return Borrowing.objects.filter(user=user_id)
-            else:
-                return Borrowing.objects.all()
-        else:
-            return Borrowing.objects.filter(user=self.request.user)
-
-
 class ReturnBookView(APIView):
     serializer_class = BorrowingReturnSerializer
+    permission_classes = [
+        permissions.IsAuthenticatedOrReadOnly,
+    ]
 
     def put(self, request, borrowing_id):
         borrowing = get_object_or_404(Borrowing, pk=borrowing_id)
