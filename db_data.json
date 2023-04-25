@@ -1,0 +1,162 @@
+[
+  {
+    "model": "books.book",
+    "pk": 1,
+    "fields": {
+      "title": "The Survivalists",
+      "author": "Kashana Cauley",
+      "cover": "HD",
+      "inventory": 1,
+      "daily_fee": 0.20
+    }
+  },
+  {
+    "model": "books.book",
+    "pk": 2,
+    "fields": {
+      "title": "Everyone Wants to Work Here",
+      "author": "Maura Thomas",
+      "cover": "ST",
+      "inventory": 2,
+      "daily_fee": 0.22
+    }
+  },
+  {
+    "model": "books.book",
+    "pk": 3,
+    "fields": {
+      "title": "Hot Dog",
+      "author": "Doug Salati",
+      "cover": "ST",
+      "inventory": 3,
+      "daily_fee": 0.28
+    }
+  },
+  {
+    "model": "books.book",
+    "pk": 4,
+    "fields": {
+      "title": "Greek Lessons",
+      "author": "Han Kang",
+      "cover": "HD",
+      "inventory": 4,
+      "daily_fee": 0.38
+    }
+  },
+  {
+    "model": "books.book",
+    "pk": 5,
+    "fields": {
+      "title": "The Possibility of Life",
+      "author": "Jaime Green",
+      "cover": "HD",
+      "inventory": 5,
+      "daily_fee": 0.48
+    }
+  },
+  {
+    "model": "borrowings.borrowing",
+    "pk": 1,
+    "fields": {
+      "borrow_date": "2024-10-12",
+      "expected_return_date": "2024-10-22",
+      "actual_return_date": "2024-10-20",
+      "user": 1,
+      "book": 1
+    }
+  },
+  {
+    "model": "borrowings.borrowing",
+    "pk": 2,
+    "fields": {
+      "borrow_date": "2024-01-12",
+      "expected_return_date": "2024-01-22",
+      "actual_return_date": "2024-01-20",
+      "user": 2,
+      "book": 2
+    }
+  },
+  {
+    "model": "borrowings.borrowing",
+    "pk": 3,
+    "fields": {
+      "borrow_date": "2024-05-12",
+      "expected_return_date": "2024-05-22",
+      "actual_return_date": "2024-05-20",
+      "user": 3,
+      "book": 3
+    }
+  },
+  {
+    "model": "borrowings.borrowing",
+    "pk": 4,
+    "fields": {
+      "borrow_date": "2024-12-12",
+      "expected_return_date": "2024-12-22",
+      "actual_return_date": "2024-12-20",
+      "user": 4,
+      "book": 4
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 1,
+    "fields": {
+      "id": 1,
+      "email": "ad@min.com",
+      "first_name": "User1",
+      "last_name": "Xxxxxxx",
+      "password": "1qazcde3",
+      "is_superuser": true,
+      "is_staff": true
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 2,
+    "fields": {
+      "id": 2,
+      "email": "user2@user.com",
+      "first_name": "User2",
+      "last_name": "Xxxxxxx",
+      "password": "1qazcde3",
+      "is_staff": true
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 3,
+    "fields": {
+      "id": 3,
+      "email": "user3@user.com",
+      "first_name": "User3",
+      "last_name": "Xxxxxxx",
+      "password": "1qazcde3",
+      "is_staff": false
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 4,
+    "fields": {
+      "id": 4,
+      "email": "user4@user.com",
+      "first_name": "User4",
+      "last_name": "Xxxxxxx",
+      "password": "1qazcde3",
+      "is_staff": false
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 5,
+    "fields": {
+      "id": 5,
+      "email": "user5@user.com",
+      "first_name": "User5",
+      "last_name": "Xxxxxxx",
+      "password": "1qazcde3",
+      "is_staff": false
+    }
+  }
+]
