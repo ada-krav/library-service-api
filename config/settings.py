@@ -172,3 +172,7 @@ SIMPLE_JWT = {
 # Telegram settings
 TELEGRAM_TOKEN_API = os.getenv("TELEGRAM_TOKEN_API")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
+
+# Stripe settings
+STRIPE_API_KEY = os.getenv("STRIPE_API_KEY")
+STRIPE_PUBLIC_KEY = os.getenv("STRIPE_PUBLIC_KEY")
