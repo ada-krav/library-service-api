@@ -1,6 +1,10 @@
+import datetime
+from django.shortcuts import get_object_or_404
+
 from rest_framework import generics
 from rest_framework import viewsets, status
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from notification.tasks import send_to_char_borrowing_book
 from .models import Borrowing
@@ -8,7 +12,7 @@ from .serializers import (
     BorrowingSerializer,
     BorrowingListSerializer,
     BorrowingDetailSerializer,
-    BorrowingCreateSerializer
+    BorrowingCreateSerializer, BorrowingReturnSerializer
 )
 
 
@@ -53,15 +57,45 @@ class BorrowingList(generics.ListCreateAPIView):
     serializer_class = BorrowingSerializer
 
     def get_queryset(self):
-        is_active_filter = self.request.query_params.get('is_active')
+        is_active_filter = self.request.query_params.get("is_active")
         if is_active_filter is True:
             return Borrowing.objects.filter(actual_return_date=None)
 
         elif self.request.user.is_superuser:
-            user_id = self.request.query_params.get('user_id')
+            user_id = self.request.query_params.get("user_id")
             if user_id:
                 return Borrowing.objects.filter(user=user_id)
             else:
                 return Borrowing.objects.all()
         else:
             return Borrowing.objects.filter(user=self.request.user)
+
+
+class ReturnBookView(APIView):
+    serializer_class = BorrowingReturnSerializer
+
+    def put(self, request, borrowing_id):
+        borrowing = get_object_or_404(Borrowing, pk=borrowing_id)
+
+        if borrowing.actual_return_date:
+            return Response(
+                {"error": "The book has already been returned."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if borrowing.user_id != request.user.id:
+            return Response(
+                {"error": "You are not authorized to return this book."},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        borrowing.actual_return_date = datetime.date.today()
+        borrowing.save()
+        book = borrowing.book
+        book.inventory += 1
+        book.save()
+
+        return Response(
+            {"success": "The book was successfully returned."},
+            status=status.HTTP_200_OK,
+        )

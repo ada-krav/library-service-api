@@ -77,7 +77,10 @@ class BorrowingCreateSerializer(serializers.ModelSerializer):
         expected_return_date = data["expected_return_date"]
 
         if expected_return_date < borrow_date:
-            raise serializers.ValidationError("The expected return date cannot be earlier than the borrow date.")
+            raise serializers.ValidationError(
+                "The expected return date cannot be "
+                "earlier than the borrow date."
+            )
 
         return data
 
@@ -95,3 +98,15 @@ class BorrowingCreateSerializer(serializers.ModelSerializer):
         )
 
         return borrowing
+
+
+class BorrowingReturnSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Borrowing
+        fields = (
+            "id",
+            "borrow_date",
+            "expected_return_date",
+            "actual_return_date",
+            "book",
+        )
