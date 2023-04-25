@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     "payments",
     "notification",
     "drf_spectacular",
+    "django_celery_beat",
 ]
 
 MIDDLEWARE = [
