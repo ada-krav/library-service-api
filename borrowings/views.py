@@ -124,9 +124,11 @@ class BorrowingViewSet(
                     payment_type="FINE",
                 )
                 return Response(
-                    {"success": ("The book was successfully returned.\n"
-                                 "Your borrowing was overdue. You`ll have to pay fine.\n"
-                                 f"Pay here: {payment.stripe_session_url}")},
+                    {
+                        "success": "The book was successfully returned.",
+                        "message": "Your borrowing was overdue. You`ll have to pay fine.",
+                        "link": f"Pay here: {payment.stripe_session_url}"
+                    },
                     status=status.HTTP_200_OK,
                 )
         return Response(
