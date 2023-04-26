@@ -29,17 +29,14 @@ class Payment(models.Model):
 
     @property
     def money_to_pay(self):
-        days_borrowed = (
-            self.borrowing.expected_return_date - self.borrowing.borrow_date
-        ).days
-        return Decimal(days_borrowed) * self.borrowing.book.daily_fee
-
-    @property
-    def money_to_pay_fine(self):
-        if self.borrowing.actual_return_date and self.borrowing.expected_return_date < self.borrowing.actual_return_date:
+        if self.type == "PAYMENT":
+            days_borrowed = (
+                self.borrowing.expected_return_date - self.borrowing.borrow_date
+            ).days
+            return Decimal(days_borrowed) * self.borrowing.book.daily_fee
+        if self.type == "FINE":
             days_overdue = (self.borrowing.actual_return_date - self.borrowing.expected_return_date).days
             return Decimal(days_overdue) * self.borrowing.book.daily_fee * Decimal(FINE_MULTIPLIER)
-        return Decimal(0)
 
     def create_stripe_session(self, success_url, cancel_url):
         line_items = [
@@ -54,20 +51,6 @@ class Payment(models.Model):
                 "quantity": 1,
             }
         ]
-
-        if self.type == Payment.TypeType.FINE:
-            line_items.append(
-                {
-                    "price_data": {
-                        "currency": "usd",
-                        "product_data": {
-                            "name": f"{self.type} for {self.borrowing.book.title}",
-                        },
-                        "unit_amount": int(self.money_to_pay_fine * 100),
-                    },
-                    "quantity": 1,
-                }
-            )
 
         stripe.api_key = os.getenv("STRIPE_API_KEY")
         session = stripe.checkout.Session.create(
