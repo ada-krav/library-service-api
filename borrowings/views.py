@@ -1,17 +1,18 @@
 import datetime
+
+from django.db import transaction
 from django.shortcuts import get_object_or_404
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 
-from rest_framework import viewsets, status, mixins
+from rest_framework import status, mixins, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.views import APIView
-
-from rest_framework import permissions
 from rest_framework.viewsets import GenericViewSet
 
 from notification.tasks import send_to_char_borrowing_book
+
+from payments.utils import create_payment_and_stripe_session
 from .models import Borrowing
 from .serializers import (
     BorrowingSerializer,
@@ -36,20 +37,21 @@ class BorrowingViewSet(
     ]
 
     def get_queryset(self):
-        if self.action == "list":
-            is_active_filter = self.request.query_params.get("is_active")
-            if is_active_filter is True:
-                return Borrowing.objects.filter(actual_return_date=None)
-            elif self.request.user.is_superuser:
-                user_id = self.request.query_params.get("user_id")
-                if user_id:
-                    return Borrowing.objects.filter(user=user_id)
-                else:
-                    return Borrowing.objects.all()
-            else:
-                return Borrowing.objects.filter(user=self.request.user)
+        queryset = self.queryset
+        is_active_filter = self.request.query_params.get("is_active")
+
+        if is_active_filter == "True":
+            queryset = queryset.filter(actual_return_date=None)
+
+        if self.request.user.is_staff:
+            user_id = self.request.query_params.get("user_id")
+
+            if user_id:
+                queryset = queryset.filter(user=user_id)
         else:
-            return super().get_queryset()
+            queryset = queryset.filter(user=self.request.user)
+
+        return queryset
 
     def get_serializer_class(self):
         if self.action == "list":
@@ -72,11 +74,6 @@ class BorrowingViewSet(
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        # send_to_char_borrowing_book.delay(
-        #     request.data["book"],
-        #     request.user.id,
-        #     request.data["expected_return_date"]
-        # )
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
         return Response(
@@ -105,13 +102,19 @@ class BorrowingViewSet(
                 {"error": "You are not authorized to return this book."},
                 status=status.HTTP_401_UNAUTHORIZED,
             )
-
-        borrowing.actual_return_date = datetime.date.today()
-        borrowing.save()
-        book = borrowing.book
-        book.inventory += 1
-        book.save()
-
+        with transaction.atomic():
+            borrowing.actual_return_date = datetime.date.today()
+            borrowing.save()
+            book = borrowing.book
+            book.inventory += 1
+            book.save()
+            if borrowing.actual_return_date > borrowing.expected_return_date:
+                create_payment_and_stripe_session(
+                    borrowing,
+                    success_url='https://www.google.com/',
+                    cancel_url='https://www.bing.com/',
+                    payment_type="FINE"
+                )
         return Response(
             {"success": "The book was successfully returned."},
             status=status.HTTP_200_OK,
