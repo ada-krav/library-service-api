@@ -2,6 +2,8 @@ import os
 import stripe
 
 from _decimal import Decimal
+
+from django.core.validators import URLValidator
 from django.db import models
 from rest_framework.exceptions import ValidationError
 
@@ -24,7 +26,11 @@ class Payment(models.Model):
     borrowing = models.ForeignKey(
         to=Borrowing, on_delete=models.CASCADE, related_name="payments"
     )
-    stripe_session_url = models.URLField(null=True, blank=True)
+    stripe_session_url = models.TextField(
+        validators=[URLValidator()],
+        null=True,
+        blank=True
+    )
     stripe_session_id = models.CharField(max_length=255, null=True, blank=True)
 
     @property
