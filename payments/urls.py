@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import PaymentList, PaymentDetail, create_stripe_session
+from .views import PaymentList, PaymentDetail, create_stripe_session, payment_success, payment_cancel
 
 urlpatterns = [
     path("payments/", PaymentList.as_view(), name="payment_list"),
@@ -9,6 +9,8 @@ urlpatterns = [
         create_stripe_session,
         name="create_stripe_session",
     ),
+    path("payments/success/", payment_success, name="payment_success"),
+    path("payments/<int:pk>/cancel/", payment_cancel, name="payment_cancel"),
 ]
 
 app_name = "payments"
