@@ -93,7 +93,7 @@ class BorrowingCreateSerializer(serializers.ModelSerializer):
         borrowing = Borrowing.objects.create(**validated_data)
         create_payment_and_stripe_session(
             borrowing,
-            success_url='https://www.google.com/',
+            success_url="http://127.0.0.1:8000/payments/success?session_id={CHECKOUT_SESSION_ID}",
             cancel_url='https://www.bing.com/',
             payment_type="PAYMENT"
         )
