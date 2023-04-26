@@ -10,6 +10,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
+from config import settings
 from notification.tasks import send_to_char_borrowing_book
 
 from payments.utils import create_payment_and_stripe_session
@@ -24,11 +25,17 @@ from .serializers import (
 from .permissions import IsTheUser
 
 
+SUCCESS_URL = (
+    f"{settings.DOMAIN_URL}/payments/success?session_id={{CHECKOUT_SESSION_ID}}"
+)
+CANCEL_URL = f"{settings.DOMAIN_URL}/payments/cancel?session_id={{CHECKOUT_SESSION_ID}}"
+
+
 class BorrowingViewSet(
     mixins.CreateModelMixin,
     mixins.RetrieveModelMixin,
     mixins.ListModelMixin,
-    GenericViewSet
+    GenericViewSet,
 ):
     queryset = Borrowing.objects.all()
     serializer_class = BorrowingSerializer
@@ -77,9 +84,7 @@ class BorrowingViewSet(
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
         return Response(
-            serializer.data,
-            status=status.HTTP_201_CREATED,
-            headers=headers
+            serializer.data, status=status.HTTP_201_CREATED, headers=headers
         )
 
     @action(
@@ -109,11 +114,17 @@ class BorrowingViewSet(
             book.inventory += 1
             book.save()
             if borrowing.actual_return_date > borrowing.expected_return_date:
-                create_payment_and_stripe_session(
+                payment = create_payment_and_stripe_session(
                     borrowing,
-                    success_url='https://www.google.com/',
-                    cancel_url='https://www.bing.com/',
-                    payment_type="FINE"
+                    success_url=SUCCESS_URL,
+                    cancel_url=CANCEL_URL,
+                    payment_type="FINE",
+                )
+                return Response(
+                    {"success": ("The book was successfully returned.\n"
+                                 "Your borrowing was overdue. You`ll have to pay fine.\n"
+                                 f"Pay here: {payment.stripe_session_url}")},
+                    status=status.HTTP_200_OK,
                 )
         return Response(
             {"success": "The book was successfully returned."},
@@ -130,8 +141,8 @@ class BorrowingViewSet(
             OpenApiParameter(
                 "user_id",
                 type=OpenApiTypes.INT,
-                description="If user is admin he can filter by user id (ex. ?user_id=1)"
-            )
+                description="If user is admin he can filter by user id (ex. ?user_id=1)",
+            ),
         ]
     )
     def list(self, request, *args, **kwargs):

@@ -1,6 +1,6 @@
 import os
-
 import stripe
+
 from _decimal import Decimal
 from django.db import models
 from rest_framework.exceptions import ValidationError
@@ -34,9 +34,15 @@ class Payment(models.Model):
                 self.borrowing.expected_return_date - self.borrowing.borrow_date
             ).days
             return Decimal(days_borrowed) * self.borrowing.book.daily_fee
-        if self.type == "FINE":
-            days_overdue = (self.borrowing.actual_return_date - self.borrowing.expected_return_date).days
-            return Decimal(days_overdue) * self.borrowing.book.daily_fee * Decimal(FINE_MULTIPLIER)
+        if self.type == "FINE" and self.borrowing.actual_return_date:
+            days_overdue = (
+                self.borrowing.actual_return_date - self.borrowing.expected_return_date
+            ).days
+            return (
+                Decimal(days_overdue)
+                * self.borrowing.book.daily_fee
+                * Decimal(FINE_MULTIPLIER)
+            )
 
     def create_stripe_session(self, success_url, cancel_url):
         line_items = [
