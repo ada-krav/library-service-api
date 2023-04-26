@@ -38,8 +38,14 @@ def create_stripe_session(request, pk):
     except Payment.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
-    success_url = request.build_absolute_uri(reverse("payments:payment_success")) + "?session_id={CHECKOUT_SESSION_ID}"
-    cancel_url = request.build_absolute_uri(reverse("payments:payment_cancel"))
+    success_url = (
+        request.build_absolute_uri(reverse("payments:payment_success"))
+        + "?session_id={CHECKOUT_SESSION_ID}"
+    )
+    cancel_url = (
+        request.build_absolute_uri(reverse("payments:payment_cancel"))
+        + "?session_id={CHECKOUT_SESSION_ID}"
+    )
 
     if not success_url or not cancel_url:
         return Response(status=status.HTTP_400_BAD_REQUEST)
@@ -63,13 +69,23 @@ def payment_success(request):
         payment.save()
         return Response({"message": "Payment was successful!"})
     else:
-        return Response({"error": "Session ID not found."}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {"error": "Session ID not found."}, status=status.HTTP_400_BAD_REQUEST
+        )
 
 
-@api_view(["GET"])
-def payment_cancel(request, pk):
-    payment = Payment.objects.get(id=pk)
-    if payment.status == "PENDING":
-        return Response({"message": f"Payment with id: {pk} can be paid later. The session is available for 24h."})
+
+@api_view(["GET", "POST"])
+def payment_cancel(request):
+    session_id = request.GET.get("session_id")
+    if session_id:
+        return Response(
+            {
+                "message": "Payment was not successful and can be paid later. "
+                "The session is available for 24h."
+            }
+        )
     else:
-        return Response({"message": f"Payment with id: {pk} is already paid."})
+        return Response(
+            {"error": "Session ID not found."}, status=status.HTTP_400_BAD_REQUEST
+        )

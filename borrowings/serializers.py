@@ -3,10 +3,17 @@ import datetime
 from rest_framework import serializers
 
 from books.serializers import BookSerializer
+from config import settings
 from payments.serializers import PaymentSerializer
 from payments.utils import create_payment_and_stripe_session
 from users.serializers import UserSerializer
 from borrowings.models import Borrowing
+
+
+SUCCESS_URL = (
+    f"{settings.DOMAIN_URL}/payments/success?session_id={{CHECKOUT_SESSION_ID}}"
+)
+CANCEL_URL = f"{settings.DOMAIN_URL}/payments/cancel?session_id={{CHECKOUT_SESSION_ID}}"
 
 
 class BorrowingSerializer(serializers.ModelSerializer):
@@ -18,15 +25,12 @@ class BorrowingSerializer(serializers.ModelSerializer):
             "book",
             "borrow_date",
             "expected_return_date",
-            "actual_return_date"
+            "actual_return_date",
         )
 
 
 class BorrowingListSerializer(BorrowingSerializer):
-    book = serializers.SlugRelatedField(
-        read_only=True,
-        slug_field="title"
-    )
+    book = serializers.SlugRelatedField(read_only=True, slug_field="title")
 
     class Meta:
         model = Borrowing
@@ -36,7 +40,7 @@ class BorrowingListSerializer(BorrowingSerializer):
             "book",
             "borrow_date",
             "expected_return_date",
-            "actual_return_date"
+            "actual_return_date",
         )
 
 
@@ -54,7 +58,7 @@ class BorrowingDetailSerializer(BorrowingSerializer):
             "borrow_date",
             "expected_return_date",
             "actual_return_date",
-            "payments"
+            "payments",
         )
 
 
@@ -63,13 +67,7 @@ class BorrowingCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Borrowing
-        fields = (
-            "id",
-            "book",
-            "borrow_date",
-            "expected_return_date",
-            "payments"
-        )
+        fields = ("id", "book", "borrow_date", "expected_return_date", "payments")
 
     def validate(self, data):
         book = data["book"]
@@ -81,8 +79,7 @@ class BorrowingCreateSerializer(serializers.ModelSerializer):
 
         if expected_return_date < borrow_date:
             raise serializers.ValidationError(
-                "The expected return date cannot be "
-                "earlier than the borrow date."
+                "The expected return date cannot be " "earlier than the borrow date."
             )
 
         return data
@@ -95,9 +92,9 @@ class BorrowingCreateSerializer(serializers.ModelSerializer):
         borrowing = Borrowing.objects.create(**validated_data)
         create_payment_and_stripe_session(
             borrowing,
-            success_url="http://127.0.0.1:8000/payments/success?session_id={CHECKOUT_SESSION_ID}",
-            cancel_url='http://127.0.0.1:8000/payments/cancel/',
-            payment_type="PAYMENT"
+            success_url=SUCCESS_URL,
+            cancel_url=CANCEL_URL,
+            payment_type="PAYMENT",
         )
 
         return borrowing

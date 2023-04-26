@@ -18,8 +18,12 @@ def create_payment_and_stripe_session(borrowing, success_url, cancel_url, paymen
         payment_type = Payment.TypeType.PAYMENT
 
     elif payment_type == "FINE":
-        days_overdue = (borrowing.actual_return_date - borrowing.expected_return_date).days
-        money_to_pay = Decimal(days_overdue) * borrowing.book.daily_fee * FINE_MULTIPLIER
+        days_overdue = (
+            borrowing.actual_return_date - borrowing.expected_return_date
+        ).days
+        money_to_pay = (
+            Decimal(days_overdue) * borrowing.book.daily_fee * FINE_MULTIPLIER
+        )
         payment_type = Payment.TypeType.FINE
     else:
         return Response(
