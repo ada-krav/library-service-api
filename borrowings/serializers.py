@@ -43,6 +43,7 @@ class BorrowingListSerializer(BorrowingSerializer):
 class BorrowingDetailSerializer(BorrowingSerializer):
     book = BookSerializer(read_only=True)
     user = UserSerializer(read_only=True)
+    payments = PaymentSerializer(read_only=True, many=True)
 
     class Meta:
         model = Borrowing
@@ -52,7 +53,8 @@ class BorrowingDetailSerializer(BorrowingSerializer):
             "book",
             "borrow_date",
             "expected_return_date",
-            "actual_return_date"
+            "actual_return_date",
+            "payments"
         )
 
 

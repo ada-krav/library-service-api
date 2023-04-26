@@ -37,22 +37,21 @@ class BorrowingViewSet(
     ]
 
     def get_queryset(self):
-        if self.action == "list":
-            queryset = self.queryset
-            is_active_filter = self.request.query_params.get("is_active")
+        queryset = self.queryset
+        is_active_filter = self.request.query_params.get("is_active")
 
-            if is_active_filter == "True":
-                queryset = queryset.filter(actual_return_date=None)
+        if is_active_filter == "True":
+            queryset = queryset.filter(actual_return_date=None)
 
-            if self.request.user.is_staff:
-                user_id = self.request.query_params.get("user_id")
+        if self.request.user.is_staff:
+            user_id = self.request.query_params.get("user_id")
 
-                if user_id:
-                    queryset = queryset.filter(user=user_id)
-            else:
-                queryset = queryset.filter(user=self.request.user)
+            if user_id:
+                queryset = queryset.filter(user=user_id)
+        else:
+            queryset = queryset.filter(user=self.request.user)
 
-            return queryset
+        return queryset
 
     def get_serializer_class(self):
         if self.action == "list":
