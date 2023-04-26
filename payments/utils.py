@@ -5,10 +5,18 @@ from .models import Payment
 
 stripe.api_key = settings.STRIPE_API_KEY
 
+FINE_MULTIPLIER = 2
+
 
 def create_payment_and_stripe_session(borrowing, success_url, cancel_url, payment_type):
-    days_borrowed = (borrowing.expected_return_date - borrowing.borrow_date).days
-    total_price = Decimal(days_borrowed) * borrowing.book.daily_fee
+    if borrowing.actual_return_date and borrowing.actual_return_date > borrowing.expected_return_date:
+        days_overdue = (borrowing.actual_return_date - borrowing.expected_return_date).days
+        money_to_pay = Decimal(days_overdue) * borrowing.book.daily_fee * FINE_MULTIPLIER
+        payment_type = Payment.TypeType.FINE
+    else:
+        days_borrowed = borrowing.actual_return_date - borrowing.borrow_date
+        money_to_pay = Decimal(days_borrowed.days) * borrowing.book.daily_fee
+        payment_type = Payment.TypeType.PAYMENT
 
     line_items = [
         {
@@ -17,7 +25,7 @@ def create_payment_and_stripe_session(borrowing, success_url, cancel_url, paymen
                 "product_data": {
                     "name": f"{payment_type} for {borrowing.book.title}",
                 },
-                "unit_amount": int(total_price * 100),
+                "unit_amount": int(money_to_pay * 100),
             },
             "quantity": 1,
         }
