@@ -1,5 +1,7 @@
 import datetime
 from django.shortcuts import get_object_or_404
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema, OpenApiParameter
 
 from rest_framework import viewsets, status, mixins
 from rest_framework.decorators import action
@@ -34,7 +36,6 @@ class BorrowingViewSet(
     ]
 
     def get_queryset(self):
-
         if self.action == "list":
             is_active_filter = self.request.query_params.get("is_active")
             if is_active_filter is True:
@@ -91,6 +92,7 @@ class BorrowingViewSet(
         permission_classes=[IsTheUser],
     )
     def return_book(self, request, pk=None):
+        """The user that borrowed the book can return it"""
         borrowing = get_object_or_404(Borrowing, pk=pk)
 
         if borrowing.actual_return_date:
@@ -114,3 +116,20 @@ class BorrowingViewSet(
             {"success": "The book was successfully returned."},
             status=status.HTTP_200_OK,
         )
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                "is_active",
+                type=OpenApiTypes.BOOL,
+                description="Filter if books already returned or not (ex. ?is_active=True)",
+            ),
+            OpenApiParameter(
+                "user_id",
+                type=OpenApiTypes.INT,
+                description="If user is admin he can filter by user id (ex. ?user_id=1)"
+            )
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(self, request, *args, **kwargs)
