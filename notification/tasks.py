@@ -13,7 +13,7 @@ bot = telebot.TeleBot(settings.TELEGRAM_TOKEN_API)
 
 
 @shared_task
-def send_to_char_borrowing_book(
+def send_to_chat_borrowing_book(
         book_id: int,
         user_id,
         expected_return_date: date,

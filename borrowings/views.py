@@ -11,7 +11,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 from config import settings
-from notification.tasks import send_to_char_borrowing_book
+from notification.tasks import send_to_chat_borrowing_book
 
 from payments.utils import create_payment_and_stripe_session
 from .models import Borrowing
@@ -85,6 +85,11 @@ class BorrowingViewSet(
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
+        send_to_chat_borrowing_book.delay(
+                request.data["book"],
+                request.user.id,
+                request.data["expected_return_date"]
+        )
         headers = self.get_success_headers(serializer.data)
         return Response(
             serializer.data, status=status.HTTP_201_CREATED, headers=headers

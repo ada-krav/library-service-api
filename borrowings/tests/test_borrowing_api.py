@@ -173,7 +173,7 @@ class AuthenticatedBorrowingApiTests(TestCase):
             "book": book.id,
             "expected_return_date": "2023-06-28",
         }
-        with patch("notification.tasks.send_to_char_borrowing_book.delay") as mock_task:
+        with patch("notification.tasks.send_to_chat_borrowing_book.delay") as mock_task:
             res = self.client.post(BORROWING_URL, payload)
 
             payment = Payment.objects.first()
