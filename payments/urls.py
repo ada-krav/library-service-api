@@ -11,8 +11,6 @@ urlpatterns = [
     ),
     path("payment/success/", payment_success, name="payment_success"),
     path("payment/cancel/", payment_cancel, name="payment_cancel"),
-    # path('payment/success/', SuccessView.as_view(), name='success'),
-    # path('payment/cancel/', CancelView.as_view(), name='cancel'),
 ]
 
 app_name = "payments"

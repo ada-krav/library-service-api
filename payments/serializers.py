@@ -1,6 +1,6 @@
 from django.urls import reverse
 from .models import Payment
-from rest_framework import serializers, request
+from rest_framework import serializers
 
 
 class PaymentSerializer(serializers.ModelSerializer):
@@ -15,14 +15,3 @@ class PaymentSerializer(serializers.ModelSerializer):
             "stripe_session_id",
             "money_to_pay",
         )
-
-    # def create(self, validated_data):
-    #     # Создаем Stripe-сессию
-    #     # Your code here
-    #
-    #     # Добавляем URL-адреса для SuccessView и CancelView
-    #     success_url = request.build_absolute_uri(reverse("success"))
-    #     cancel_url = request.build_absolute_uri(reverse("cancel"))
-    #     # Your code here
-    #
-    #     return session_id

@@ -94,7 +94,7 @@ class BorrowingCreateSerializer(serializers.ModelSerializer):
         create_payment_and_stripe_session(
             borrowing,
             success_url="http://127.0.0.1:8000/payments/success?session_id={CHECKOUT_SESSION_ID}",
-            cancel_url='https://www.bing.com/',
+            cancel_url='http://127.0.0.1:8000/payments/cancel/',
             payment_type="PAYMENT"
         )
 
