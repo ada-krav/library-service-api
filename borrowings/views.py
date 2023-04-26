@@ -1,11 +1,14 @@
 import datetime
 from django.shortcuts import get_object_or_404
 
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, mixins
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from rest_framework import permissions
+from rest_framework.viewsets import GenericViewSet
+
 from notification.tasks import send_to_char_borrowing_book
 from .models import Borrowing
 from .serializers import (
@@ -15,9 +18,15 @@ from .serializers import (
     BorrowingCreateSerializer,
     BorrowingReturnSerializer,
 )
+from .permissions import IsTheUser
 
 
-class BorrowingViewSet(viewsets.ModelViewSet):
+class BorrowingViewSet(
+    mixins.CreateModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.ListModelMixin,
+    GenericViewSet
+):
     queryset = Borrowing.objects.all()
     serializer_class = BorrowingSerializer
     permission_classes = [
@@ -51,6 +60,9 @@ class BorrowingViewSet(viewsets.ModelViewSet):
         if self.action == "create":
             return BorrowingCreateSerializer
 
+        if self.action == "return_book":
+            return BorrowingReturnSerializer
+
         return BorrowingSerializer
 
     def perform_create(self, serializer):
@@ -72,22 +84,20 @@ class BorrowingViewSet(viewsets.ModelViewSet):
             headers=headers
         )
 
-
-class ReturnBookView(APIView):
-    serializer_class = BorrowingReturnSerializer
-    permission_classes = [
-        permissions.IsAuthenticatedOrReadOnly,
-    ]
-
-    def put(self, request, borrowing_id):
-        borrowing = get_object_or_404(Borrowing, pk=borrowing_id)
+    @action(
+        methods=["POST"],
+        detail=True,
+        url_path="return",
+        permission_classes=[IsTheUser],
+    )
+    def return_book(self, request, pk=None):
+        borrowing = get_object_or_404(Borrowing, pk=pk)
 
         if borrowing.actual_return_date:
             return Response(
                 {"error": "The book has already been returned."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-
         if borrowing.user_id != request.user.id:
             return Response(
                 {"error": "You are not authorized to return this book."},
