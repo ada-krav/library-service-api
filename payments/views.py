@@ -67,5 +67,9 @@ def payment_success(request):
 
 
 @api_view(["GET", "POST"])
-def payment_cancel(request):
-    return Response({"message": "Payment can be paid later. The session is available for 24h."})
+def payment_cancel(request, pk):
+    payment = Payment.objects.get(id=pk)
+    if payment.status == "PENDING":
+        return Response({"message": f"Payment with id: {pk} can be paid later. The session is available for 24h."})
+    else:
+        return Response({"message": f"Payment with id: {pk} is already paid."})

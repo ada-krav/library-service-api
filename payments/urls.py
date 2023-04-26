@@ -9,8 +9,8 @@ urlpatterns = [
         create_stripe_session,
         name="create_stripe_session",
     ),
-    path("payment/success/", payment_success, name="payment_success"),
-    path("payment/cancel/", payment_cancel, name="payment_cancel"),
+    path("payments/success/", payment_success, name="payment_success"),
+    path("payments/<int:pk>/cancel/", payment_cancel, name="payment_cancel"),
 ]
 
 app_name = "payments"

@@ -1,7 +1,6 @@
 import stripe
 from _decimal import Decimal
 from django.conf import settings
-from rest_framework import request
 from .models import Payment
 
 stripe.api_key = settings.STRIPE_API_KEY
@@ -31,7 +30,6 @@ def create_payment_and_stripe_session(borrowing, success_url, cancel_url, paymen
         success_url=success_url,
         cancel_url=cancel_url,
     )
-#        customer=request.user.stripe_customer_id
 
     payment = Payment.objects.create(
         borrowing=borrowing,
