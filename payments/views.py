@@ -66,7 +66,7 @@ def payment_success(request):
         return Response({"error": "Session ID not found."}, status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(["GET", "POST"])
+@api_view(["GET"])
 def payment_cancel(request, pk):
     payment = Payment.objects.get(id=pk)
     if payment.status == "PENDING":

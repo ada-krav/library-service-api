@@ -111,8 +111,8 @@ class BorrowingViewSet(
             if borrowing.actual_return_date > borrowing.expected_return_date:
                 create_payment_and_stripe_session(
                     borrowing,
-                    success_url='https://www.google.com/',
-                    cancel_url='https://www.bing.com/',
+                    success_url="http://127.0.0.1:8000/payments/success?session_id={CHECKOUT_SESSION_ID}",
+                    cancel_url='http://127.0.0.1:8000/payments/cancel/',
                     payment_type="FINE"
                 )
         return Response(
